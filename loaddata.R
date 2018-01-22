@@ -26,9 +26,9 @@ save(twitter, file="raw_twitter.RData")
 profanity <- grepl(" +[Ff]uck|[Ss]hit|[Cc]unt|[Aa]sshole +", twitter)
 twitter <- twitter[!profanity]
 
-# Only keep half of the twitter data
+# Only keep one quarter of the twitter data
 set.seed(123455)
-rfilter <- rbinom(length(twitter), size=1, prob=0.5)
+rfilter <- rbinom(length(twitter), size=1, prob=0.25)
 filter <- rfilter == 1
 twitter <- twitter[filter]
 
@@ -41,8 +41,8 @@ save(twitter, file="twitter.RData")
 profanity <- grepl(" +[Ff]uck|[Ss]hit|[Cc]unt|[Aa]sshole +", blog)
 blog <- blog[!profanity]
 
-# Get the blog down to a manageable size by removing half
-rfilter <- rbinom(length(blog), size=1, prob=0.5)
+# Get the blog down to a manageable size by removing three quarters
+rfilter <- rbinom(length(blog), size=1, prob=0.25)
 filter <- rfilter == 1
 blog <- blog[filter]
 
