@@ -9,6 +9,7 @@ splitngrams <- function(x) {
     strsplit(x, " ")
 }
 
+# Turn a character vector of text into a data frame of ngrams with their associated frequency
 createngrams <- function(text, n, filter=FALSE){
     ngrams <- tokenize_ngrams(text, lowercase=TRUE, n=n, n_min=n, simplify=TRUE)
     # Unlist it
@@ -46,9 +47,14 @@ createmodel <- function(ngramfreq){
     names = c(paste("x",nums,sep=""),"y")
     names(splits) <- names
     
-    # names(splits) <- c("xone","xtwo","xthree","y")
-    
     splits$weight <- ngramfreq$Freq
     ngrammodel <- splits
+    
+    # Order the data frame by weight
+    ngrammodel <- ngrammodel[with(ngrammodel, order(x1,-weight)),]
+    
+    # Reindex it
+    rownames(ngrammodel) <- 1:nrow(ngrammodel)
     return(ngrammodel)
 }
+
