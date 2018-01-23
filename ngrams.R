@@ -11,6 +11,7 @@ load("blog.RData")
 text = c(news, twitter, blog)
 text = iconv(text, "latin1", "ASCII", sub="")
 rm("news","twitter","blog")
+save(text, file="fulltext.RData")
 
 # Great 2 and 3 grams from the data
 twograms <- tokenize_ngrams(text, lowercase=TRUE, n=2L, n_min=2L, simplify=TRUE)
@@ -74,6 +75,29 @@ rm("filter")
 
 # Save
 save(fourgramfreq, file="fourgramfreq.RData")
+
+
+
+## One last time for five grams
+fivegrams <- tokenize_ngrams(text, lowercase=TRUE, n=5L, n_min=5L, simplify=TRUE)
+# Unlist it
+fivegrams <- unlist(fivegrams)
+# Get frequency
+fivegramfreq = as.data.frame(table(fivegrams))
+# Save and remove twograms
+save(fivegrams, file="fivegrams.Rdata")
+rm("fivegrams")
+# Order and save the two grams
+fivegramfreq <- fivegramfreq[order(-fivegramfreq$Freq),]
+save(fivegramfreq, file="fivegramfreq_raw.RData")
+
+# Filter out ngrams that only occur once
+#filter <- fourgramfreq$Freq > 1
+#fourgramfreq = fourgramfreq[filter,]
+#rm("filter")
+
+# Save
+save(fivegramfreq, file="fivegramfreq.RData")
 
 ## Old code for one dataframe for ngrams of all lengths
 # Filter out ngrams that only appear once

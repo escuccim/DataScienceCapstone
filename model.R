@@ -1,13 +1,9 @@
+source("functions.R")
 # Create a model for 3 grams
 load("threegramfreq.RData")
 
 # Change the threegrams column into a character
 threegramfreq$threegrams <- as.character(threegramfreq$threegrams)
-
-# Split the strings into features
-splitngrams <- function(x) {
-    strsplit(x, " ")
-}
 
 splits <- splitngrams(threegramfreq$threegrams)
 splits <- do.call(rbind, splits)
@@ -47,6 +43,21 @@ splits$weight <- twogramfreq$Freq
 twogrammodel <- splits
 save(twogrammodel, file="twogramFeatureMatrix.RData")
 
+## And once more for five grams
+load("fivegramfreq.RData")
+
+# Change the threegrams column into a character
+fivegramfreq$fivegrams <- as.character(fivegramfreq$fivegrams)
+
+splits <- splitngrams(fivegramfreq$fivegrams)
+splits <- do.call(rbind, splits)
+splits <- as.data.frame(splits)
+names(splits) <- c("xone","y")
+splits$weight <- fivegramfreq$Freq
+fivegrammodel <- splits
+save(fivegrammodel, file="fivegramFeatureMatrix.RData")
+
 
 ## Clean up
-rm("splits","fourgramfreq","threegramfreq","twogramfreq")
+rm("splits","fourgramfreq","threegramfreq","twogramfreq", "fivegramfreq")
+
