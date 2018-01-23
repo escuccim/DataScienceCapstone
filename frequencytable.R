@@ -26,34 +26,9 @@ rm("rfilter")
 
 corpus <- VCorpus(VectorSource(text))
 #tdm = as.matrix(TermDocumentMatrix(corpus))
-tdm <- as.matrix(TermDocumentMatrix(corpus, control = list(wordLengths = c(1, Inf))))
+tdm <- as.matrix(TermDocumentMatrix(corpus, control = list(wordLengths = c(3, Inf))))
 frequencycount <- rowSums(tdm)
-
-
-df <- as.data.frame(corpus)
-save(df, file="corpus_df.RData")
-rm("df")
-
-# Get ngrams out of the data
-ngrams <- tokenize_ngrams(corpus, lowercase=TRUE, n=4L, n_min=2L, simplify=TRUE)
-save(ngrams, file="ngrams.RData")
-rm("ngrams")
-
-# Tokenize the words
-words <- tokenize_words(corpus)
-words <- unlist(words)
-save(words, file="words.RData")
-rm("words")
-
-#uniqueWords = function(d) {
-    return(paste(unique(strsplit(d, " ")[[1]]), collapse = ' '))
-}
-
-#corpus = VCorpus(VectorSource(corpus))
-#corpus = tm_map(corpus, content_transformer(uniqueWords))
-#tdm = as.matrix(TermDocumentMatrix(corpus, control = list(wordLengths = c(1, Inf))))
-
-
-
-tdm
-rowSums(tdm)
+save(tdm, file="tdm.RData")
+rm("tdm")
+frequencycount <- sort(frequencycount, decreasing=TRUE)
+save(frequencycount, file="frequencycount.RData")
