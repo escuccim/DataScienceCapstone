@@ -1,13 +1,13 @@
 library(tm)
 
 # Load the data
-load("threegramFeatureMatrix.RData")
 load("twogramFeatureMatrix.RData")
+load("threegramFeatureMatrix.RData")
 load("fourgramFeatureMatrix.RData")
-load("fourgramFeatureMatrix.RData")
+load("fivegramFeatureMatrix.RData")
 
 # create a prediction function
-predictText <- function(x){
+predictText <- function(x, recurse=TRUE){
     string <- tolower(x)
     string <-removePunctuation(string)
     split <- strsplit(string, " ")
@@ -15,33 +15,43 @@ predictText <- function(x){
     
     len <- length(string)
     
-    # if our string is 2 characters long use the three gram model
-    if(len == 2){
-        model <- subset(threegrammodel, threegrammodel$xone == string[1])
-        model <- subset(model, model$xtwo == string[2])
-        
+    # if our string only has one word
+    if(len == 1){
+        model <- subset(twogrammodel, twogrammodel$x1 == string[1])
     }
-    # If length is 1 use the two gram model
-    else if(len == 1){
-        model <- subset(twogrammodel, twogrammodel$xone == string[1])
+    # else if our string has two words
+    else if(len == 2){
+        model <- subset(threegrammodel, threegrammodel$x1 == string[1])
+        model <- subset(model, model$x2 == string[2])
     }
-    # Else use the four gram model on the last three words on the string
+    # else if our string has three words
+    else if(len == 3){
+        model <- subset(fourgrammodel, fourgrammodel$x1 == string[1])
+        model <- subset(model, model$x2 == string[2])
+        model <- subset(model, model$x3 == string[3])
+    }
+    # Else if our string is loner use the fivegram model
     else if(len > 0){
-        if (len > 3){
-            substring <- tail(string,3)
+        if (len >= 4){
+            substring <- tail(string,4)
         }
-        model <- subset(fourgrammodel, fourgrammodel$xone == substring[1])
-        model <- subset(model, model$xtwo == substring[2])
-        model <- subset(model, model$xthree == substring[3])
+        model <- subset(fivegrammodel, fivegrammodel$x1 == substring[1])
+        model <- subset(model, model$x2 == substring[2])
+        model <- subset(model, model$x3 == substring[3])
+        model <- subset(model, model$x4 == substring[4])
     }
     results <- head(model$y, 5)
     results <- as.character(results)
     
-    # if we have no results, remove the first word and try again
-    if( (length(results) == 0) & (len > 0) ){
-        string <- string[2:length(string)]
-        x <- paste(string, collapse=" ")
-        results <- predictText(x)
+    # if recurse is true
+    if(recurse){
+        # if we have no results, remove the first word and try again
+        if( (length(results) == 0) & (len > 0) ){
+            string <- string[2:length(string)]
+            x <- paste(string, collapse=" ")
+            results <- predictText(x)
+        }    
     }
+    
     return(results)
 }
