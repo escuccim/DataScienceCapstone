@@ -1,7 +1,7 @@
 # Load the data
-load("threegrammodel.RData")
-load("twogrammodel.RData")
-load("fourgrammodel.RData")
+load("threegramFeatureMatrix.RData")
+load("twogramFeatureMatrix.RData")
+load("fourgramFeatureMatrix.RData")
 
 # create a prediction function
 predictText <- function(x){
