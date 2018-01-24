@@ -11,7 +11,8 @@ splitngrams <- function(x) {
 
 # Turn a character vector of text into a data frame of ngrams with their associated frequency
 createngrams <- function(text, n, filter=FALSE){
-    ngrams <- tokenize_ngrams(text, lowercase=TRUE, n=n, n_min=n, simplify=TRUE)
+    sentences <- unlist(tokenize_sentences(text))
+    ngrams <- tokenize_ngrams(sentences, lowercase=TRUE, n=n, n_min=n, simplify=TRUE)
     # Unlist it
     ngrams <- unlist(ngrams)
     # Get frequency
@@ -33,7 +34,7 @@ createngrams <- function(text, n, filter=FALSE){
     return(ngramfreq)
 }
 
-createmodel <- function(ngramfreq){
+createmodel <- function(ngramfreq, cols=6){
     ngramfreq$ngrams <- as.character(ngramfreq$ngrams)
     
     splits <- splitngrams(ngramfreq$ngrams)
@@ -42,19 +43,28 @@ createmodel <- function(ngramfreq){
     
     # Name the columns
     numcols = ncol(splits)
+    numfeatures = numcols - 1
     names(splits)[numcols] <- "y"
-    nums <- 1:(numcols-1)
+    nums <- (cols+1-numcols):(5)
     names = c(paste("x",nums,sep=""),"y")
     names(splits) <- names
     
-    splits$weight <- (ngramfreq$Freq / totalFreq)
+    splits$weight <- (ngramfreq$Freq)
     ngrammodel <- splits
     
     # Order the data frame by weight
-    ngrammodel <- ngrammodel[with(ngrammodel, order(x1,-weight)),]
+    ngrammodel <- ngrammodel[with(ngrammodel, order(x5,-weight)),]
     
     # Reindex it
     rownames(ngrammodel) <- 1:nrow(ngrammodel)
+    
+    # Add cols with NAs where appropriate
+    if(numcols < cols){
+        newcols = 1:(cols-numcols)
+        newcolnames = paste("x",newcols,sep="")
+        ngrammodel[,newcolnames] <- NA    
+    }
+    
     return(ngrammodel)
 }
 
@@ -83,4 +93,15 @@ cleanmodel <- function(model) {
     # Renumber the rows
     rownames(model) <- 1:nrow(model)
     return(model)
+}
+
+cleanData <- function(data){
+    data <- removeNumbers(data)
+    data <- removePunctuation(data)
+    data
+}
+
+pad  <- function(x, n) {
+    len.diff <- n - length(x)
+    c(x, rep(NA, len.diff)) 
 }

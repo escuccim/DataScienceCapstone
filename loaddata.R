@@ -4,11 +4,7 @@
 
 # Function to clean data
 library(tm)
-cleanData <- function(data){
-    data <- removeNumbers(data)
-    data <- removePunctuation(data)
-    data
-}
+source("functions.R")
 
 
 # Read the  data in
@@ -57,14 +53,17 @@ save(news, file="news.RData")
 # Clean up
 rm("filter", "rfilter","profanity")
 
-## Tokenize the text
-#library(tokenizers)
-#tnews <- tokenize_words(news)
-#tblog <- tokenize_words(blog)
-#ttwitter <- tokenize_words(twitter)
+# Combine the files into one and save it
+text = c(news, twitter, blog)
 
-#save(tblog, file="token_blog.RData")
-#save(tnews, file="token_news.RData")
-#save(ttwitter, file="token_twitter.RData")
+# Remove non-ASCII characters
+text = iconv(text, "latin1", "ASCII", sub="")
+
+# Clean up
+rm("news","twitter","blog")
+
+# Save
+save(text, file="text.RData")
+
 
 

@@ -1,19 +1,40 @@
 library(tm)
 
 # Load the data
-load("twogrammodel.RData")
-load("threegrammodel.RData")
-load("fourgrammodel.RData")
-load("fivegrammodel.RData")
+#load("twogrammodel.RData")
+#load("threegrammodel.RData")
+#load("fourgrammodel.RData")
+#load("fivegrammodel.RData")
+load("ngrams_clean.RData")
 
 # create a prediction function
 predictText <- function(x, recurse=TRUE){
     string <- tolower(x)
     string <-removePunctuation(string)
-    split <- strsplit(string, " ")
-    string <- split[[1]]
-    
+    string <- strsplit(string, " ")
+    string <- rev(string[[1]])[1:5]
     len <- length(string)
+    
+    # Try an easier way
+    i <- 1
+    matches <- ngrams
+    for(word in string){
+        if(!is.na(word)){
+            temp <- subset(matches, matches[,i] == word)
+            if(nrow(temp) >= 3){
+                matches <- temp
+            } else {
+                break
+            }
+            i <- i + 1    
+        } else {
+            break
+        }
+    }
+    
+    results <- head(unique(matches$y), 5)
+    results <- as.character(results)
+    return(results)
     
     # if our string only has one word
     if(len == 1){
