@@ -1,10 +1,10 @@
 library(tm)
 
 # Load the data
-load("twogramFeatureMatrix.RData")
-load("threegramFeatureMatrix.RData")
-load("fourgramFeatureMatrix.RData")
-load("fivegramFeatureMatrix.RData")
+load("twogrammodel.RData")
+load("threegrammodel.RData")
+load("fourgrammodel.RData")
+load("fivegrammodel.RData")
 
 # create a prediction function
 predictText <- function(x, recurse=TRUE){

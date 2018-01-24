@@ -47,7 +47,7 @@ createmodel <- function(ngramfreq){
     names = c(paste("x",nums,sep=""),"y")
     names(splits) <- names
     
-    splits$weight <- ngramfreq$Freq
+    splits$weight <- (ngramfreq$Freq / totalFreq)
     ngrammodel <- splits
     
     # Order the data frame by weight
@@ -58,3 +58,29 @@ createmodel <- function(ngramfreq){
     return(ngrammodel)
 }
 
+# Since we only return the top three matches we only need to keep the top 3 ys for each combination of x's
+cleanmodel <- function(model) {
+    numx <- ncol(model) - 2
+    xcols <- 1:numx
+    cols <- paste("x", xcols, sep="")
+    # Create an empty dataframe with same columns
+    newmodel <- model[0,]
+    
+    # Get unique combinations of cols
+    uniqueRows <- unique(model[cols])
+    filter = rep(FALSE, nrow(model))
+    fillvalues = rep(TRUE, 3)
+    
+    for( i in rownames(uniqueRows) ){
+        i <- as.numeric(i)
+        filter[i:(i+2)] <- TRUE
+    }
+    model <- model[filter,]
+    
+    # Drop the last two rows because they are empty
+    nrows <- nrow(model)
+    model <- model[1:(nrows-2),]
+    # Renumber the rows
+    rownames(model) <- 1:nrow(model)
+    return(model)
+}
