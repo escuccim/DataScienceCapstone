@@ -105,3 +105,16 @@ pad  <- function(x, n) {
     len.diff <- n - length(x)
     c(x, rep(NA, len.diff)) 
 }
+
+checkword <- function(word){
+    return(word %in% words)
+}
+
+# remove non-words
+checkwords <- function(list){
+    words <- read.csv("words.txt")
+    words <- words$X2
+    
+    filter <- apply(as.matrix(list),1,checkword)
+    return(filter)
+}
