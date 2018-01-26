@@ -110,6 +110,12 @@ checkword <- function(word){
     return(word %in% words)
 }
 
+scaleweight <- function(ngrams){
+    ngrams$weight <- log10(ngrams$weight)
+    ngrams$weight <- ngrams$weight + 0.1
+    return(ngrams)
+}
+
 # remove non-words
 checkwords <- function(list){
     words <- read.csv("words.txt")
@@ -117,4 +123,9 @@ checkwords <- function(list){
     
     filter <- apply(as.matrix(list),1,checkword)
     return(filter)
+}
+
+# update the weight so that longer strings have a higher weight
+weightweight <- function(ngrams){
+    
 }

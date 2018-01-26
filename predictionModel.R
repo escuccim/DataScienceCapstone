@@ -1,7 +1,10 @@
 library(tm)
 
 # Load the data
-load("ngrams_clean.RData")
+if(!exists("ngrams")){
+    load("ngrams_clean.RData")    
+}
+
 
 # create a prediction function
 predictText <- function(x, recurse=TRUE){
@@ -16,19 +19,35 @@ predictText <- function(x, recurse=TRUE){
     matches <- ngrams
     for(word in string){
         if(!is.na(word)){
-            temp <- subset(matches, matches[,i] == word)
+            # Added check for NA to try to prevent overfitting
+            # | is.na(matches[,i])
+            temp <- subset(matches, (matches[,i] == word  ))
+            
+            # Check how many unique ys there are, if we have less than 3 we can break and return
+            # and no need to continue looping
+            if(length(unique(matches$y)) <= 3){
+                break;
+            }
+            
+            # if we have matches keep them, otherwise skip the word and continue
             if(nrow(temp) >= 3){
                 matches <- temp
-            } else {
-                # skip and continue
-            }
+            } 
+            
             i <- i + 1    
         } else {
             break
         }
     }
     
-    results <- head(unique(matches$y), 5)
+    # Filter out duplicate ys because they don't add anything
+    matches = matches[!duplicated(matches$y, fromLast=TRUE),]
+    
+    # sort the matches
+    matches <- matches[ order(matches$weight, row.names(matches), decreasing=TRUE), ]
+    
+    # Take the top 3
+    results <- head(unique(matches$y), 3)
     results <- as.character(results)
     return(results)
 }
