@@ -69,7 +69,7 @@ createmodel <- function(ngramfreq, cols=6){
 }
 
 # Since we only return the top three matches we only need to keep the top 3 ys for each combination of x's
-cleanmodel <- function(model) {
+cleanmodel <- function(model, threshhold=3) {
     numx <- ncol(model) - 2
     xcols <- 1:numx
     cols <- paste("x", xcols, sep="")
@@ -79,7 +79,7 @@ cleanmodel <- function(model) {
     # Get unique combinations of cols
     uniqueRows <- unique(model[cols])
     filter = rep(FALSE, nrow(model))
-    fillvalues = rep(TRUE, 3)
+    fillvalues = rep(TRUE, threshhold)
     
     for( i in rownames(uniqueRows) ){
         i <- as.numeric(i)
