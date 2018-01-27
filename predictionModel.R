@@ -16,7 +16,7 @@ predictText <- function(x){
     
     # Try an easier way
     i <- 1
-    matches <- ngrams
+    matches <- ngrammodel
     for(word in string){
         if(!is.na(word)){
             # Added check for NA to try to prevent overfitting

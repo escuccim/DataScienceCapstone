@@ -27,6 +27,6 @@ columns <- c("x5","x4","x3","x2","x1","y","weight")
 ngrams <- ngrams[columns]
 # Clean the dataframe
 ngrams <- cleanmodel(ngrams)
-ngrams <- scaleweight(ngrams)
-save(ngrams, file="ngrams_clean.RData")
+ngrammodel <- scaleweight(ngrams)
+save(ngrammodel, file="ngrams_clean.RData")
 
