@@ -1,0 +1,139 @@
+---
+title: "Text Prediction Milestone Report"
+author: "Eric Scuccimarra"
+date: "27 January 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE, cache=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tm)
+library(wordcloud)
+library(tokenizers)
+require(RColorBrewer)
+load("corpus.RData")
+load("text.RData")
+load("twogramfreq_raw.RData")
+load("threegramfreq_raw.RData")
+load("frequencycount.RData")
+twogramfreq <- twogramfreq[order(-twogramfreq$Freq),]
+threegramfreq <- threegramfreq[order(-threegramfreq$Freq),]
+```
+
+## Summary
+
+The project is to create a text prediction algorithm using data supplied by Swiftkey. The data is text from online news sources, blogs and Twitter. I am using the English language data.
+
+## Loading the Data
+
+The data is read in from the three text files. 
+
+```{r loadingdata, cache=TRUE, results="hide"}
+# Read the  data in
+blog <- readLines("final/en_US/en_US.blogs.txt", encoding="UTF-8")
+twitter <- readLines("final/en_US/en_US.twitter.txt", encoding="UTF-8")
+news <- readLines("final/en_US/en_US.news.txt", encoding="UTF-8")
+```
+
+```{r filterprofanity, echo=FALSE, cache=TRUE}
+profanity <- grepl(" +[Ff]uck|[Ss]hit|[Cc]unt|[Aa]sshole +", twitter)
+twitter <- twitter[!profanity]
+
+profanity <- grepl(" +[Ff]uck|[Ss]hit|[Cc]unt|[Aa]sshole +", blog)
+blog <- blog[!profanity]
+```
+
+Profanity is filtered out, then the blog and twitter data sets are subsetted at random to result in data of a manageable size.
+
+```{r subsetdata, cache=TRUE}
+set.seed(123455)
+rfilter <- rbinom(length(twitter), size=1, prob=0.25)
+filter <- rfilter == 1
+twitter <- twitter[filter]
+
+rfilter <- rbinom(length(blog), size=1, prob=0.25)
+filter <- rfilter == 1
+blog <- blog[filter]
+```
+
+Finally the three data sets are combined into one corpus and non-ASCII characters are removed.
+
+```{r combine, cache=TRUE}
+text = c(news, twitter, blog)
+
+# Remove non-ASCII characters
+text = iconv(text, "latin1", "ASCII", sub="")
+rm(blog,profanity,twitter,news,filter,rfilter)
+```
+
+## Data Summary
+
+To give an overview of the data it is converted into a TextDocumentMatrix using the tm library. 
+
+```{r tdm, cache=TRUE, eval=FALSE}
+corpus <- VCorpus(VectorSource(text))
+tdm <- as.matrix(TermDocumentMatrix(corpus, control = list(wordLengths = c(3, Inf))))
+frequencycount <- rowSums(tdm)
+frequencycount <- sort(frequencycount, decreasing=TRUE)
+```
+
+We can use this to see the most common words.
+
+```{r frequencytable}
+head(frequencycount, 12)
+```
+
+Or we can look at a word cloud using the wordcloud library:
+```{r wordcloud, cache=TRUE}
+pal2 <- brewer.pal(8,"Dark2")
+wordcloud(corpus, scale=c(6,.5), min.freq=3, max.words=200, random.order=TRUE,
+          rot.per=0.5, colors=pal2,  use.r.layout=FALSE)
+```
+
+## Tokenizing the Corpus
+
+Next the data is tokenized into ngrams of length 2 to 5 using the tokenizers library. The ngrams are converted into a table which is sorted by Frequency to show us the most common ngrams.
+
+```{r tokenize, cache=TRUE, eval=FALSE}
+twograms <- tokenize_ngrams(text, lowercase=TRUE, n=2L, n_min=2L, simplify=TRUE)
+twograms <- unlist(twograms)
+twogramfreq = as.data.frame(table(twograms))
+twogramfreq <- twogramfreq[order(-twogramfreq$Freq),]
+
+threegrams <- tokenize_ngrams(text, lowercase=TRUE, n=3L, n_min=3L, simplify=TRUE)
+threegrams <- unlist(threegrams)
+threegramfreq = as.data.frame(table(threegrams))
+threegramfreq <- threegramfreq[order(-threegramfreq$Freq),]
+```
+
+This will allow us to view the most common two and three grams:
+
+```{r histograms}
+barplot(twogramfreq[2:26,2], 
+        names.arg=twogramfreq[2:26,1], 
+        col = "blue", 
+        main="Twograms (Top 25)", 
+        las=2, 
+        ylab = "Frequency")
+
+barplot(threegramfreq[1:25,2], 
+        names.arg=threegramfreq[1:25,1], 
+        col = "red", 
+        main="Threegrams (Top 25)", 
+        las=2, 
+        ylab = "Frequency")
+```
+Note that the most common two gram was "a a" which has been removed due to not being a valid phrase.
+
+## Plans for Algorithm
+
+I have attempted to input the tokenized text into a decision tree algorithm, but was unable to do so due to the high amount of RAM required.
+
+My plan is to create a feature matrix of ngrams with the y as the last word and the features as the preceding words. This should enable me to filter down the possible matches by looping through the input string and reducing the set of matches for each word. In the end the top three matches will be returned.
+
+Some issues which will need to be addressed to accomplish this:
+
+1. The corpus contains many words which are not valid English words or are names. Ideally the spelling errors or non-words would be filtered out. I am not sure how to handle names of people or places yet.
+2. Much of the text is not grammatically correct. Ideally these would be filtered out, although time and processing power may make that difficult for this demo.
+3. I am not yet sure how to handle input that does not match an existing ngram. 
+

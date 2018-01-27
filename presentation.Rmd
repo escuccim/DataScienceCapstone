@@ -1,0 +1,14 @@
+---
+title: "Text Prediction"
+author: "Eric Scuccimarra"
+date: "27 January 2018"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Executive Summary
+
+The problem was how to create a predictive text algorithm from a corpus of text taken from online news, blogs and Twitter.
