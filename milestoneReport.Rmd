@@ -86,7 +86,7 @@ head(frequencycount, 12)
 Or we can look at a word cloud using the wordcloud library:
 ```{r wordcloud, cache=TRUE}
 pal2 <- brewer.pal(8,"Dark2")
-wordcloud(corpus, scale=c(6,.5), min.freq=3, max.words=200, random.order=TRUE,
+wordcloud(corpus, scale=c(6,.5), min.freq=2, max.words=300, random.order=TRUE,
           rot.per=0.5, colors=pal2,  use.r.layout=FALSE)
 ```
 
@@ -109,19 +109,11 @@ threegramfreq <- threegramfreq[order(-threegramfreq$Freq),]
 This will allow us to view the most common two and three grams:
 
 ```{r histograms}
-barplot(twogramfreq[2:26,2], 
-        names.arg=twogramfreq[2:26,1], 
-        col = "blue", 
-        main="Twograms (Top 25)", 
-        las=2, 
-        ylab = "Frequency")
+barplot(twogramfreq[2:26,2], names.arg=twogramfreq[2:26,1], col = "blue", 
+        main="Twograms (Top 25)", las=2, ylab = "Frequency")
 
-barplot(threegramfreq[1:25,2], 
-        names.arg=threegramfreq[1:25,1], 
-        col = "red", 
-        main="Threegrams (Top 25)", 
-        las=2, 
-        ylab = "Frequency")
+barplot(threegramfreq[1:25,2], names.arg=threegramfreq[1:25,1], col = "red", 
+        main="Threegrams (Top 25)", las=2, ylab = "Frequency")
 ```
 Note that the most common two gram was "a a" which has been removed due to not being a valid phrase.
 
