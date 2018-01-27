@@ -41,6 +41,10 @@ Function predictText(x) takes a string as input and returns a character vector w
 5. The matches are ordered by decreasing weight.
 6. The first three unique ys are returned as the predictions.
 
+## Application
+
+The algorithm is put into a Shiny application which is contained in the folder TextPrediction.
+
 ## Functions
 File: functions.R
 
