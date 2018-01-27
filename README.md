@@ -54,6 +54,7 @@ The file **predictionModel.R** will read in the ngram models and create a functi
 
 ```
 predictText("i like to")
+# [1] "play" "go"   "put" 
 ```
 
 
