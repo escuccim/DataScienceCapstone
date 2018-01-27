@@ -45,6 +45,18 @@ Function predictText(x) takes a string as input and returns a character vector w
 
 The algorithm is put into a Shiny application which is contained in the folder TextPrediction.
 
+## Creating the Data Files
+The file **loaddata.R** will read in the text files, perform the preprocessing and save the text to an RData file.
+
+The file **makeData.R** will load in the text object and create the model, which will be saved to RData file and RDS file.
+
+The file **predictionModel.R** will read in the ngram models and create a function that takes a string as input and returns the top three matches:
+
+```
+predictText("i like to")
+```
+
+
 ## Functions
 File: functions.R
 
