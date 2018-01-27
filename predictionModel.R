@@ -1,7 +1,7 @@
 library(tm)
 
 # Load the data
-if(!exists("ngrams")){
+if(!exists("ngrammodel")){
     load("ngrams_clean.RData")    
 }
 
