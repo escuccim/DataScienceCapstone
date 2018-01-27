@@ -1,0 +1,79 @@
+Text Prediction Algoritm
+========================================================
+author: Eric Scuccimarra
+date: 2018-01-28
+autosize: true
+
+The Problem
+========================================================
+
+The problem was to create a text prediction system using text taken from online news, blogs and Twitter. This presentation will describe the steps taken to accomplish this as well as describe the final algorithm.
+
+The data was provided by Swiftkey in multiple languages. Only the English data was used for this project.
+
+## Loading the Data
+
+A sample of the raw data is below:
+```{r}
+load("raw_twitter.RData")
+head(twitter, 3)
+```
+
+The raw data is filtered to remove profanity and then subsetted to keep the data to a manageable size. Non-ASCII characters are removed and the filtered data from all three sources are combined into one corpus.
+
+
+
+Exploratory Data Analysis
+========================================================
+
+A TermDocumentMatrix is created using the tm library. The matrix contains all words longer than three characters. The matrix is sorted by frequency to yield the most frequently occuring words:
+
+```{r, echo=FALSE}
+library(tm)
+load("frequencycount.RData")
+head(frequencycount,12)
+```
+
+## Creating a Model
+
+After a great deal of trial and error a process was created with which to create a model of the text.
+
+1. Ngrams are created from the text from lengths two to six. The ngrams are converted into a data frame containing each ngram and the number of times that particular ngram occurs in the corpus.
+2. For each length of ngram, a model is created. The model has five columns of features and the outcome, y, is the last word in the ngram. The preceding words are placed in the feature columns, aligned right. Empty columns are filled with NAs. A weight column contains the frequency of the ngram. For each unique combination of features, only the top three y's by weight are retained.
+3. The models for each length of ngram are combined into one large model, and duplicates are filtered out and the weights are scaled to log10, with 0 replaced by 0.1.
+
+There are optional parameters in the functions that create the model to set the number of matches to be kept for each ngram and whether to remove ngrams which only occur once in the corpus. By default the top 3 matches are kept and all ngrams are retained.
+
+Prediction Algorithm
+========================================================
+
+I attempted to fit some decision tree models to the data, but the amount of RAM required made this impossible. Instead I use the following algorithm:
+
+1. For a given string, convert the string to lowercase and remove punctuation.
+2. Split the string into a vector, reverse it and keep the first five elements.
+3. Loop through the items in the string. For each:
+    1. Subset the ngram model to keep only ngrams which contain the current word in the specified position.
+    2. If there are two or more matches, the subset is retained into the next step. Otherwise that word is ignored.
+    3. If there are more than three unique matches continue the loop. Otherwise exit.
+4. Duplicate ys are removed from the set of matches, the matches are ordered by decreasing weight, and the top three y's are returned.
+
+Steps 2 and 3 inside the for loop are designed to ensure that some match is returned for every string, and to allow flexibility for strings which are not contained in the ngrams. If a word in the string filters out all of the potential matches, that word is ignored and the loop continues.
+
+Up to three possible matches are returned for every input string.
+
+Shiny Application
+========================================================
+
+A Shiny application was created to feature this algorithm, which is available at https://ericscuccimarra.shinyapps.io/TextPrediction/. 
+
+The application uses a dataset which filters out 75% of the text from the Twitter and Blog data, in order to provide a reasonable response speed. Using more data would provide in better predictions.
+
+## Outstanding Issues
+
+There are some problems with my algorith, which can be fixed with more data and time:
+
+1. Many non-existent or misspeleld words are contained in the corpus. I attempted to filter these out, but my attempts ended up filtering out many legitimate words as well. 
+2. The ngram model contains many ngrams which occur only once in the corpus. The vast majority of the ngrams occur only once. The issue with this is that it may lead to overfitting of the data. An example of this is the prediction for "my wife is a" returns only one result: "nurse." More data would solve this problem by allowing us to filter out ngrams which only occur once in the corpus. Unfortunately, the memory and processing power required for this made it impractical for me to do.
+3. Two-grams occur far more frequently than longer ngrams, giving them a disproportionate weight. This was addressed by removing the duplicate Ngrams of shorter length first in the prediction function. I believe that a weighting system which took the length of the ngram into account would be likely to provide better predictions.
+
+
