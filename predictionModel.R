@@ -7,7 +7,7 @@ if(!exists("ngrams")){
 
 
 # create a prediction function
-predictText <- function(x, recurse=TRUE){
+predictText <- function(x){
     string <- tolower(x)
     string <-removePunctuation(string)
     string <- strsplit(string, " ")
@@ -23,16 +23,16 @@ predictText <- function(x, recurse=TRUE){
             # | is.na(matches[,i])
             temp <- subset(matches, (matches[,i] == word  ))
             
+            # if we have matches keep them, otherwise skip the word and continue
+            if(nrow(temp) >= 2){
+                matches <- temp
+            } 
+            
             # Check how many unique ys there are, if we have less than 3 we can break and return
             # and no need to continue looping
             if(length(unique(matches$y)) <= 3){
                 break;
             }
-            
-            # if we have matches keep them, otherwise skip the word and continue
-            if(nrow(temp) >= 3){
-                matches <- temp
-            } 
             
             i <- i + 1    
         } else {

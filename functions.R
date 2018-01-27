@@ -10,7 +10,7 @@ splitngrams <- function(x) {
 }
 
 # Turn a character vector of text into a data frame of ngrams with their associated frequency
-createngrams <- function(text, n, filter=FALSE){
+createngrams <- function(text, n, filter_results=FALSE){
     sentences <- unlist(tokenize_sentences(text))
     ngrams <- tokenize_ngrams(sentences, lowercase=TRUE, n=n, n_min=n, simplify=TRUE)
     # Unlist it
@@ -23,7 +23,7 @@ createngrams <- function(text, n, filter=FALSE){
     # Order and save the two grams
     ngramfreq <- ngramfreq[order(-ngramfreq$Freq),]
     
-    if(filter){
+    if(filter_results){
         # Filter out ngrams that only occur once
         filter <- ngramfreq$Freq > 1
         ngramfreq = ngramfreq[filter,]    

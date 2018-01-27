@@ -60,10 +60,9 @@ predictText <- function(x, recurse=TRUE){
     return(results)
 }
 
-# Define server logic required to draw a histogram
 shinyServer(function(input, output) {
   
-  predictions <- reactive({
+  predictFromText <- reactive({
       text <- input$text
       
       matches <- predictText(text)
@@ -71,11 +70,11 @@ shinyServer(function(input, output) {
      
   output$prediction <- renderUI({
       if(input$text != ''){
-          list <- predictions()
+          list <- predictFromText()
       }else{
           list <- character()
       }
-      if(length(list) >= 1){
+      if(length(list) > 0){
           html_string <- character()
           for(word in list){
               string <- c("<li>",word,"</li>")
@@ -88,5 +87,4 @@ shinyServer(function(input, output) {
       }
       results
   })
-  
 })
