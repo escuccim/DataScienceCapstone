@@ -11,9 +11,7 @@ library(shiny)
 library(tm)
 
 # Load the data
-if(!exists("ngrams")){
-    load("ngrams_clean.RData")    
-}
+
 
 predictText <- function(x, ngrammodel, recurse=TRUE){
     string <- tolower(x)

@@ -29,4 +29,5 @@ ngrams <- ngrams[columns]
 ngrams <- cleanmodel(ngrams)
 ngrammodel <- scaleweight(ngrams)
 save(ngrammodel, file="ngrams_clean.RData")
+saveRDS(ngrammodel, file="ngrammodel.Rds")
 

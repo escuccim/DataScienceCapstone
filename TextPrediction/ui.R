@@ -35,7 +35,9 @@ shinyUI(fluidPage(
        textInput("text", "Enter your text:"),
        submitButton("Predict"),
        h3("Predictions:"),
-       htmlOutput("prediction")
+       htmlOutput("prediction"),
+       hr(),
+       p("Note: it may take a few seconds to load the data the first time this is run. Please be patient!")
     )
   )
 ))

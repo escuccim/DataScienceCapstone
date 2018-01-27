@@ -25,6 +25,7 @@ text <- text[rfilter]
 rm("rfilter")
 
 corpus <- VCorpus(VectorSource(text))
+save(corpus, file="corpus.RData")
 #tdm = as.matrix(TermDocumentMatrix(corpus))
 tdm <- as.matrix(TermDocumentMatrix(corpus, control = list(wordLengths = c(3, Inf))))
 frequencycount <- rowSums(tdm)

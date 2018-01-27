@@ -17,7 +17,6 @@ createngrams <- function(text, n, filter_results=FALSE){
     ngrams <- unlist(ngrams)
     # Get frequency
     ngramfreq = as.data.frame(table(ngrams))
-    # Save and remove twograms
     
     rm("ngrams")
     # Order and save the two grams
