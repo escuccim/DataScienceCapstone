@@ -15,7 +15,7 @@ if(!exists("ngrams")){
     load("ngrams_clean.RData")    
 }
 
-predictText <- function(x, recurse=TRUE){
+predictText <- function(x, ngrammodel, recurse=TRUE){
     string <- tolower(x)
     string <-removePunctuation(string)
     string <- strsplit(string, " ")
@@ -24,11 +24,10 @@ predictText <- function(x, recurse=TRUE){
     
     # Try an easier way
     i <- 1
-    matches <- ngrams
+    matches <- ngrammodel
     for(word in string){
         if(!is.na(word)){
-            # Added check for NA to try to prevent overfitting
-            # | is.na(matches[,i])
+            # Added check for NA to try to prevent overfitting | is.na(matches[,i])
             temp <- subset(matches, (matches[,i] == word  ))
             
             # Check how many unique ys there are, if we have less than 3 we can break and return
@@ -65,7 +64,7 @@ shinyServer(function(input, output) {
   predictFromText <- reactive({
       text <- input$text
       
-      matches <- predictText(text)
+      matches <- predictText(text, ngrammodel)
   })
      
   output$prediction <- renderUI({
