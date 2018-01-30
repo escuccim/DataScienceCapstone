@@ -34,6 +34,8 @@ load("frequencycount.RData")
 head(frequencycount,12)
 ```
 
+I did not remove stop words because I felt that doing so would negatively impact the quality of the predictions. I did however remove spelling mistakes and other non-English words.
+
 ## Creating a Model
 
 After a great deal of trial and error a process was created with which to create a model of the text.
@@ -64,7 +66,7 @@ Up to three possible matches are returned for every input string.
 Shiny Application
 ========================================================
 
-A Shiny application was created to feature this algorithm, which is available at https://ericscuccimarra.shinyapps.io/TextPrediction/. 
+A Shiny application was created to feature this algorithm, which is available at https://ericscuccimarra.shinyapps.io/TextPrediction2/. 
 
 The application uses a dataset which filters out 75% of the text from the Twitter and Blog data, in order to provide a reasonable response speed. Using more data would provide in better predictions.
 
