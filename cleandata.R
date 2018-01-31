@@ -26,5 +26,29 @@ filter <- unlist(lapply(as.character(y), function(x) x %in% bad_words))
 ngrammodel <- ngrammodel[!filter,]
 save(ngrammodel, file="ngrams_clean.RData")
 
+x5 <- ngrammodel$x5
+filter <- unlist(lapply(as.character(x5), function(x) x %in% bad_words))
+ngrammodel <- ngrammodel[!filter,]
+rm(x5)
+
+x4 <- ngrammodel$x4
+filter <- unlist(lapply(as.character(x4), function(x) x %in% bad_words))
+ngrammodel <- ngrammodel[!filter,]
+rm(x4)
+
+x3 <- ngrammodel$x3
+filter <- unlist(lapply(as.character(x3), function(x) x %in% bad_words))
+ngrammodel <- ngrammodel[!filter,]
+rm(x3)
+
+x2 <- ngrammodel$x2
+filter <- unlist(lapply(as.character(x2), function(x) x %in% bad_words))
+ngrammodel <- ngrammodel[!filter,]
+rm(x2)
+rownames(ngrammodel) <- 1:nrow(ngrammodel)
+
+save(ngrammodel, file="ngrams_clean.RData")
+saveRDS(ngrammodel, file="ngrammodel.Rds")
+
 # We are going to keep the other word regardless of whether they are real words or not, because having
 # them can't hurt the model

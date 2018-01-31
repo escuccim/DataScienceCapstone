@@ -115,6 +115,10 @@ scaleweight <- function(ngrams){
     return(ngrams)
 }
 
+weightweights <- function(ngrammodel){
+    
+}
+
 # remove non-words
 checkwords <- function(list){
     words <- read.csv("words.txt")

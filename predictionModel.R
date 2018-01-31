@@ -9,6 +9,7 @@ if(!exists("ngrammodel")){
 # create a prediction function
 predictText <- function(x){
     string <- tolower(x)
+    string <- removeNumbers(string)
     string <-removePunctuation(string)
     string <- strsplit(string, " ")
     string <- rev(string[[1]])[1:5]
