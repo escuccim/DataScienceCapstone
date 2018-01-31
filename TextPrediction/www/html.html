@@ -6,8 +6,10 @@
 <script>
     $(document).on("click", ".prediction", function(e){
         current_text = $("#text").val();
-        word = $(this).data("val");
-        new_text = current_text + word;
+        word = $(this).data("val").trim();
+        new_text = current_text + " " + word;
+        new_text = new_text.trim();
         $("#text").val(new_text);
+        Shiny.onInputChange("text", new_text);
     });
 </script>

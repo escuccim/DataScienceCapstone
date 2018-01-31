@@ -74,7 +74,7 @@ shinyServer(function(input, output) {
       if(length(list) > 0){
           html_string <- character()
           for(word in list){
-              string <- c("<li><a data-val='",word,"' class='prediction'>",word,"</a></li>")
+              string <- c("<li><a data-val='",trimws(word),"' class='prediction'>",word,"</a></li>")
               html_string = c(html_string, string)
           }
           html <- c("<ol>", html_string, "</ol>")
