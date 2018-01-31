@@ -45,6 +45,12 @@ x2 <- ngrammodel$x2
 filter <- unlist(lapply(as.character(x2), function(x) x %in% bad_words))
 ngrammodel <- ngrammodel[!filter,]
 rm(x2)
+
+x1 <- ngrammodel$x1
+filter <- unlist(lapply(as.character(x1), function(x) x %in% bad_words))
+ngrammodel <- ngrammodel[!filter,]
+rm(x1)
+
 rownames(ngrammodel) <- 1:nrow(ngrammodel)
 
 save(ngrammodel, file="ngrams_clean.RData")
