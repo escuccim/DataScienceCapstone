@@ -20,6 +20,7 @@ shinyUI(fluidPage(
     sidebarPanel(
        h3("Instructions"),
        p("Type a phrase in the box and press submit and it will predict the next word."),
+       p("Click on the prediction you would like to use and it will be added to your text."),
        h3("About the algorithm"),
        p("The algorithm starts with a corpus of text which is broken up into sentences and words. The words are converted into n-grams of length two through six. When you enter your text, the algorithm goes through the data to find the words that are most likely to follow."),
        h3("The code"),
@@ -39,5 +40,6 @@ shinyUI(fluidPage(
        hr(),
        p("Note: it may take a few seconds to load the data the first time this is run. Please be patient!")
     )
-  )
+  ),
+  includeHTML("www/html.html")
 ))
