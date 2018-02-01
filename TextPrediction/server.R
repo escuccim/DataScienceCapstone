@@ -60,7 +60,7 @@ predictText <- function(x, ngrammodel, recurse=TRUE){
 shinyServer(function(input, output) {
   
   predictFromText <- reactive({
-      text <- input$text
+      text <- trimws(input$text)
       
       matches <- predictText(text, ngrammodel)
   })
@@ -80,7 +80,7 @@ shinyServer(function(input, output) {
           html <- c("<ol>", html_string, "</ol>")
           results <- HTML(html)
       } else {
-          results <- list
+          results <- HTML("<ol><li>None</li></ol>")
       }
       results
   })
