@@ -291,7 +291,7 @@ The file biggerData.R includes all of the steps to create an ngrammodel, using a
 
 * Overfitting - As has been described above, the vast majority of the ngrams occur only once in the corpus. While the algorithm does allow for inputs which do not exactly match an existing ngram, if the input does match an existing ngram the predictions will overfit the data. For example entering "my wife is a" as input will return only one prediction - "nurse."  I had considered removing any ngrams which appeared only once in the corpus to avoid this issue, but as the majority of the ngrams appeared only once this resulted in a very small model with very low quality predictions. The solution to this issue would be more data, which would allow me to filter out rare ngrams while still providing decent matches. 
 * Size of the data - the model is still relatively large. I feel that some sort of decision tree or neural network would provide far greater flexibility and quality of predictions, however my attempt to fit decision trees required prohibitive amounts of RAM even for the smallest subsets of the data I attempted to use. The prediction algorith I ended up using was an attempt to try to mimic a decision tree.
-
+* Online learning - ideally this algorithm would learn as it is used. Every time a prediction is generated the selected prediction would increase in weight while the unselected predictions would decrease slightly. This would allow the quality of the predictions to improve. If the input text contains ngrams which do not exist in the model, they could also be added. This would allow the algorithm to refine itself as it is used.
 
 ## Appendix
 
@@ -333,7 +333,6 @@ createngrams <- function(text, n, filter_results=FALSE){
     return(ngramfreq)
 }
 
-# Create an ngram model from a frequency table and a specified number of columns
 createmodel <- function(ngramfreq, cols=6){
     ngramfreq$ngrams <- as.character(ngramfreq$ngrams)
     
@@ -401,6 +400,11 @@ cleanData <- function(data){
     data
 }
 
+pad  <- function(x, n) {
+    len.diff <- n - length(x)
+    c(x, rep(NA, len.diff)) 
+}
+
 checkword <- function(word){
     return(word %in% words)
 }
@@ -409,6 +413,104 @@ scaleweight <- function(ngrams){
     ngrams$weight <- log10(ngrams$weight)
     ngrams$weight <- ngrams$weight + 0.1
     return(ngrams)
+}
+
+weightweights <- function(ngrammodel){
+    
+}
+
+# remove non-words
+checkwords <- function(list){
+    if(!exists("words")){
+        words <- read.csv("words.txt")
+        words <- words$X2    
+    }
+    
+    filter <- apply(as.matrix(list),1,checkword)
+    return(filter)
+}
+
+# make a model for a maximum of six-grams from a given text corpus.
+# threshhold specifies a minimum required number of occurences in the text of an ngram
+makedata <- function(text, threshhold=0) {
+    # Create an empty data frame
+    ngrams <- data.frame(x1=character(),
+                         x2=character(),
+                         x3=character(),
+                         x4=character(),
+                         x5=character(),
+                         y=character(),
+                         weight=integer(),
+                         stringsAsFactors=TRUE)
+    
+    # Create ngrams from the text
+    for(i in 2:6){
+        ngramfreq <- createngrams(text, i)
+        if(threshhold > 0){
+            ngramfreq <- subset(ngramfreq, ngramfreq$Freq > threshhold)
+        }
+        model <- createmodel(ngramfreq, 6)
+        ngrams <- rbind(ngrams, model)
+        rm("ngramfreq","model")
+    }
+    rm("text")
+    
+    # Reorder the columns
+    columns <- c("x5","x4","x3","x2","x1","y","weight")
+    ngrams <- ngrams[columns]
+
+    return(ngrams)
+}
+
+# For an ngrammodel and a list of INVALID words, remove any rows which contain invalid words
+validateWords <- function(ngrammodel, bad_words) {
+    y <- ngrammodel$y
+    filter <- unlist(lapply(as.character(y), function(x) x %in% bad_words))
+    ngrammodel <- ngrammodel[!filter,]
+    
+    x5 <- ngrammodel$x5
+    filter <- unlist(lapply(as.character(x5), function(x) x %in% bad_words))
+    ngrammodel <- ngrammodel[!filter,]
+    rm(x5)
+    
+    x4 <- ngrammodel$x4
+    filter <- unlist(lapply(as.character(x4), function(x) x %in% bad_words))
+    ngrammodel <- ngrammodel[!filter,]
+    rm(x4)
+    
+    x3 <- ngrammodel$x3
+    filter <- unlist(lapply(as.character(x3), function(x) x %in% bad_words))
+    ngrammodel <- ngrammodel[!filter,]
+    rm(x3)
+    
+    x2 <- ngrammodel$x2
+    filter <- unlist(lapply(as.character(x2), function(x) x %in% bad_words))
+    ngrammodel <- ngrammodel[!filter,]
+    rm(x2)
+    
+    x1 <- ngrammodel$x1
+    filter <- unlist(lapply(as.character(x1), function(x) x %in% bad_words))
+    ngrammodel <- ngrammodel[!filter,]
+    rm(x1)
+    
+    rownames(ngrammodel) <- 1:nrow(ngrammodel)
+    
+    return(ngrammodel)
+}
+
+# Get list of unique words
+uniquewords <- function(ngrammodel){
+    wordlist <- c(as.character(ngrammodel$y), as.character(ngrammodel$x5), as.character(ngrammodel$x4), as.character(ngrammodel$x3), as.character(ngrammodel$x2), as.character(ngrammodel$x1))
+    wordlist <- unique(wordlist)
+    return(wordlist)
+}
+
+# Get list of which words are NOT valid
+invalid_word_list <- function(wordlist){
+    filter <- apply(as.matrix(wordlist),1,checkword)
+    bad_words <- wordlist[!filter]
+    bad_words <- unique(bad_words)
+    return(bad_words)
 }
 ```
 

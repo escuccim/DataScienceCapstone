@@ -130,8 +130,9 @@ checkwords <- function(list){
     return(filter)
 }
 
-# make a model for a maximum of six-grams from a given text corpus
-makedata <- function(text) {
+# make a model for a maximum of six-grams from a given text corpus.
+# threshhold specifies a minimum required number of occurences in the text of an ngram
+makedata <- function(text, threshhold=0) {
     # Create an empty data frame
     ngrams <- data.frame(x1=character(),
                          x2=character(),
@@ -145,6 +146,9 @@ makedata <- function(text) {
     # Create ngrams from the text
     for(i in 2:6){
         ngramfreq <- createngrams(text, i)
+        if(threshhold > 0){
+            ngramfreq <- subset(ngramfreq, ngramfreq$Freq > threshhold)
+        }
         model <- createmodel(ngramfreq, 6)
         ngrams <- rbind(ngrams, model)
         rm("ngramfreq","model")
@@ -159,7 +163,7 @@ makedata <- function(text) {
 }
 
 # For an ngrammodel and a list of INVALID words, remove any rows which contain invalid words
-function validateWords(ngrammodel, bad_words) {
+validateWords <- function(ngrammodel, bad_words) {
     y <- ngrammodel$y
     filter <- unlist(lapply(as.character(y), function(x) x %in% bad_words))
     ngrammodel <- ngrammodel[!filter,]
