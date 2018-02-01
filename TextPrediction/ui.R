@@ -32,12 +32,12 @@ shinyUI(fluidPage(
     # Show a plot of the generated distribution
     mainPanel(
        h2("Text Prediction"),
-       textInput("text", "Enter your text:"),
+       textInput("text", "Enter your text:", width="100%"),
       # submitButton("Predict"),
        h3("Predictions:"),
        htmlOutput("prediction"),
        hr(),
-       p("Click on a prediction to select it.")
+       p("Click on a prediction to select it and add it to the text.")
     )
   ),
   includeHTML("www/html.html")

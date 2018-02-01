@@ -121,14 +121,90 @@ weightweights <- function(ngrammodel){
 
 # remove non-words
 checkwords <- function(list){
-    words <- read.csv("words.txt")
-    words <- words$X2
+    if(!exists("words")){
+        words <- read.csv("words.txt")
+        words <- words$X2    
+    }
     
     filter <- apply(as.matrix(list),1,checkword)
     return(filter)
 }
 
-# update the weight so that longer strings have a higher weight
-weightweight <- function(ngrams){
+# make a model for a maximum of six-grams from a given text corpus
+makedata <- function(text) {
+    # Create an empty data frame
+    ngrams <- data.frame(x1=character(),
+                         x2=character(),
+                         x3=character(),
+                         x4=character(),
+                         x5=character(),
+                         y=character(),
+                         weight=integer(),
+                         stringsAsFactors=TRUE)
     
+    # Create ngrams from the text
+    for(i in 2:6){
+        ngramfreq <- createngrams(text, i)
+        model <- createmodel(ngramfreq, 6)
+        ngrams <- rbind(ngrams, model)
+        rm("ngramfreq","model")
+    }
+    rm("text")
+    
+    # Reorder the columns
+    columns <- c("x5","x4","x3","x2","x1","y","weight")
+    ngrams <- ngrams[columns]
+
+    return(ngrams)
+}
+
+# For an ngrammodel and a list of INVALID words, remove any rows which contain invalid words
+function validateWords(ngrammodel, bad_words) {
+    y <- ngrammodel$y
+    filter <- unlist(lapply(as.character(y), function(x) x %in% bad_words))
+    ngrammodel <- ngrammodel[!filter,]
+    
+    x5 <- ngrammodel$x5
+    filter <- unlist(lapply(as.character(x5), function(x) x %in% bad_words))
+    ngrammodel <- ngrammodel[!filter,]
+    rm(x5)
+    
+    x4 <- ngrammodel$x4
+    filter <- unlist(lapply(as.character(x4), function(x) x %in% bad_words))
+    ngrammodel <- ngrammodel[!filter,]
+    rm(x4)
+    
+    x3 <- ngrammodel$x3
+    filter <- unlist(lapply(as.character(x3), function(x) x %in% bad_words))
+    ngrammodel <- ngrammodel[!filter,]
+    rm(x3)
+    
+    x2 <- ngrammodel$x2
+    filter <- unlist(lapply(as.character(x2), function(x) x %in% bad_words))
+    ngrammodel <- ngrammodel[!filter,]
+    rm(x2)
+    
+    x1 <- ngrammodel$x1
+    filter <- unlist(lapply(as.character(x1), function(x) x %in% bad_words))
+    ngrammodel <- ngrammodel[!filter,]
+    rm(x1)
+    
+    rownames(ngrammodel) <- 1:nrow(ngrammodel)
+    
+    return(ngrammodel)
+}
+
+# Get list of unique words
+uniquewords <- function(ngrammodel){
+    wordlist <- c(as.character(ngrammodel$y), as.character(ngrammodel$x5), as.character(ngrammodel$x4), as.character(ngrammodel$x3), as.character(ngrammodel$x2), as.character(ngrammodel$x1))
+    wordlist <- unique(wordlist)
+    return(wordlist)
+}
+
+# Get list of which words are NOT valid
+invalid_word_list <- function(wordlist){
+    filter <- apply(as.matrix(wordlist),1,checkword)
+    bad_words <- wordlist[!filter]
+    bad_words <- unique(bad_words)
+    return(bad_words)
 }

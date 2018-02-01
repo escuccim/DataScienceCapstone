@@ -283,7 +283,9 @@ To create a prediction model follow these steps:
 3. cleandata.R - removes invalid words
 4. predictionModel.R - contains the function to predict text.
 
-Be aware that running this entire process may take a very long time.
+Be aware that running this entire process as is will take a long time and require a lot of CPU and RAM. 
+
+The file biggerData.R includes all of the steps to create an ngrammodel, using a larger subset of the data than I originally used.
 
 ## Outstanding Issues
 
