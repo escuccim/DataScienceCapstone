@@ -1,12 +1,12 @@
 ---
 title: "Text Prediction Milestone Report"
 author: "Eric Scuccimarra"
-date: "27 January 2018"
+date: "02 February 2018"
 output: html_document
 ---
 
 ```{r setup, include=FALSE, cache=TRUE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 library(tm)
 library(wordcloud)
 library(tokenizers)
@@ -28,14 +28,14 @@ The project is to create a text prediction algorithm using data supplied by Swif
 
 The data is read in from the three text files. 
 
-```{r loadingdata, cache=TRUE, results="hide", message=FALSE}
+```{r loadingdata, cache=TRUE, results="hide", message=FALSE, eval=FALSE}
 # Read the  data in
 blog <- readLines("final/en_US/en_US.blogs.txt", encoding="UTF-8")
 twitter <- readLines("final/en_US/en_US.twitter.txt", encoding="UTF-8")
 news <- readLines("final/en_US/en_US.news.txt", encoding="UTF-8")
 ```
 
-```{r filterprofanity, echo=FALSE, cache=TRUE}
+```{r filterprofanity, echo=FALSE, cache=TRUE, eval=FALSE}
 profanity <- grepl(" +[Ff]uck|[Ss]hit|[Cc]unt|[Aa]sshole +", twitter)
 twitter <- twitter[!profanity]
 
@@ -45,7 +45,7 @@ blog <- blog[!profanity]
 
 Profanity is filtered out, then the blog and twitter data sets are subsetted at random to result in data of a manageable size.
 
-```{r subsetdata, cache=TRUE}
+```{r subsetdata, cache=TRUE, eval=FALSE}
 set.seed(123455)
 rfilter <- rbinom(length(twitter), size=1, prob=0.25)
 filter <- rfilter == 1
@@ -58,12 +58,11 @@ blog <- blog[filter]
 
 Finally the three data sets are combined into one corpus and non-ASCII characters are removed.
 
-```{r combine, cache=TRUE}
+```{r combine, cache=TRUE, eval=FALSE}
 text = c(news, twitter, blog)
 
 # Remove non-ASCII characters
 text = iconv(text, "latin1", "ASCII", sub="")
-rm(blog,profanity,twitter,news,filter,rfilter)
 ```
 
 ## Data Summary
@@ -127,6 +126,6 @@ My plan is to create a feature matrix of ngrams with the y as the last word and 
 Some issues which will need to be addressed to accomplish this:
 
 1. The corpus contains many words which are not valid English words or are names. Ideally the spelling errors or non-words would be filtered out. I am not sure how to handle names of people or places yet.
-2. Much of the text is not grammatically correct. Ideally these would be filtered out, although time and processing power may make that difficult for this demo.
+2. Much of the text is not grammatically correct. Ideally these would be filtered out, although time and processing power may make that difficult for this project.
 3. I am not yet sure how to handle input that does not match an existing ngram. 
 

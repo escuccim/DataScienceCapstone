@@ -14,12 +14,12 @@ The data was provided by Swiftkey in multiple languages. Only the English data w
 ## Loading the Data
 
 A sample of the raw data is below:
-```{r}
+```{r sampledata, cache=TRUE}
 load("raw_twitter.RData")
 head(twitter, 3)
 ```
 
-The raw data is filtered to remove profanity and then subsetted to keep the data to a manageable size. Non-ASCII characters are removed and the filtered data from all three sources are combined into one corpus.
+The raw data is filtered to remove profanity and then subsetted to keep the data to a manageable size. Numbers and non-ASCII characters are removed and the filtered data from all three sources are combined into one corpus.
 
 
 
@@ -28,13 +28,13 @@ Exploratory Data Analysis
 
 A TermDocumentMatrix is created using the tm library. The matrix contains all words longer than three characters. The matrix is sorted by frequency to yield the most frequently occuring words:
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, cache=TRUE}
 library(tm)
 load("frequencycount.RData")
 head(frequencycount,12)
 ```
 
-I did not remove stop words because I felt that doing so would negatively impact the quality of the predictions. I did however remove spelling mistakes and other non-English words.
+I did not remove stop words because I felt that doing so would negatively impact the quality of the predictions. I did however remove misspelled words and other non-English words.
 
 ## Creating a Model
 
@@ -70,12 +70,13 @@ A Shiny application was created to feature this algorithm, which is available at
 
 The application uses a dataset which filters out 75% of the text from the Twitter and Blog data, in order to provide a reasonable response speed. Using more data would provide in better predictions.
 
+The source code is available on GitHub at https://github.com/escuccim/DataScienceCapstone
+
 ## Outstanding Issues
 
 There are some problems with my algorith, which can be fixed with more data and time:
 
-1. Many non-existent or misspeleld words are contained in the corpus. I attempted to filter these out, but my attempts ended up filtering out many legitimate words as well. 
-2. The ngram model contains many ngrams which occur only once in the corpus. The vast majority of the ngrams occur only once. The issue with this is that it may lead to overfitting of the data. An example of this is the prediction for "my wife is a" returns only one result: "nurse." More data would solve this problem by allowing us to filter out ngrams which only occur once in the corpus. Unfortunately, the memory and processing power required for this made it impractical for me to do.
-3. Two-grams occur far more frequently than longer ngrams, giving them a disproportionate weight. This was addressed by removing the duplicate Ngrams of shorter length first in the prediction function. I believe that a weighting system which took the length of the ngram into account would be likely to provide better predictions.
+1. The ngram model contains many ngrams which occur only once in the corpus. The vast majority of the ngrams occur only once. The issue with this is that it may lead to overfitting of the data. An example of this is the prediction for "my wife is a" returns only one result: "nurse." I attempted to use a larger subset of the data and filter our ngrams which occur only once, but the memory and processing requirements made this impractical.
+2. Two-grams occur far more frequently than longer ngrams, giving them a disproportionate weight. This was addressed by removing the duplicate Ngrams of shorter length first in the prediction function. I believe that a weighting system which took the length of the ngram into account would be likely to provide better predictions.
 
 
