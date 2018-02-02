@@ -2,16 +2,20 @@
 title: "Text Prediction Algorithm"
 author: "Eric Scuccimarra"
 date: "27 January 2018"
-output: ioslides_presentation
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 library(tm)
 library(RWeka)
 library(dplyr)
 library(magrittr)
 library(tokenizers)
+library(wordcloud)
+require(RColorBrewer)
+load("text.RData")
+source("functions.R")
 ```
 
 ## Executive Summary
@@ -24,7 +28,7 @@ The data was provided by Swiftkey in multiple languages. Only the English data w
 ## Loading the Data
 
 The data is read in from the three source text files and then profanity is removed:
-```{r loaddata, cache=TRUE}
+```{r loaddata, cache=TRUE, results='hide', echo=TRUE, eval=FALSE}
 blog <- readLines("final/en_US/en_US.blogs.txt", encoding="UTF-8")
 twitter <- readLines("final/en_US/en_US.twitter.txt", encoding="UTF-8")
 news <- readLines("final/en_US/en_US.news.txt", encoding="UTF-8")
@@ -39,7 +43,7 @@ blog <- blog[!profanity]
 
 The data is then subsetted to a manageable size and punctuation and numbers are removed.
 
-```{r cleandata, cache=TRUE}
+```{r cleandata, cache=TRUE, eval=FALSE}
 set.seed(123455)
 # Subset twitter data
 rfilter <- rbinom(length(twitter), size=1, prob=0.25)
@@ -59,7 +63,7 @@ blog <- cleanData(blog)
 
 Finally the data are combined into one vector and non-ASCII characters are removed:
 
-```{r combinedata, cache=TRUE}
+```{r combinedata, cache=TRUE, eval=FALSE}
 text = c(news, twitter, blog)
 
 # Remove non-ASCII characters
@@ -89,13 +93,12 @@ load("frequencycount.RData")
 head(frequencycount, 12)
 ```
 
-We can also view a wordcloud of the data. In this case I have removed the stopwords.
+We can also view a wordcloud of the data
 
 ```{r wordcloud, cache=TRUE}
 load("corpus.RData")
-corpus = tm_map(corpus, removeWords, stopwords("english"))
 pal2 <- brewer.pal(8,"Dark2")
-wordcloud(corpus, scale=c(6,.5), min.freq=2, max.words=300, random.order=TRUE,
+wordcloud(corpus, scale=c(6,.2), min.freq=2, max.words=200, random.order=TRUE,
           rot.per=0.5, colors=pal2,  use.r.layout=FALSE)
 ```
 
@@ -470,7 +473,7 @@ makedata <- function(text, threshhold=0) {
 ```
 
 ## II - Removing Invalid Words
-```{r removeinvalidwords}
+```{r removeinvalidwords, echo=TRUE}
 # For an ngrammodel and a list of INVALID words, remove any rows which contain invalid words
 validateWords <- function(ngrammodel, bad_words) {
     y <- ngrammodel$y

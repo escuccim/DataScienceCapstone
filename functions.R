@@ -12,6 +12,7 @@ splitngrams <- function(x) {
 # Turn a character vector of text into a data frame of ngrams with their associated frequency
 createngrams <- function(sentences, n, threshold=0){
     ngrams <- tokenize_ngrams(sentences, lowercase=TRUE, n=n, n_min=n, simplify=TRUE)
+    
     # Unlist it
     ngrams <- unlist(ngrams)
     # Get frequency
@@ -95,7 +96,7 @@ cleanmodel <- function(model, threshhold=3) {
 
 cleanData <- function(data){
     data <- removeNumbers(data)
-    data <- removePunctuation(data)
+    # data <- removePunctuation(data)
     data
 }
 
@@ -127,7 +128,12 @@ checkwords <- function(list){
 # make a model for a maximum of six-grams from a given text corpus.
 # threshhold specifies a minimum required number of occurences in the text of an ngram
 makedata <- function(text, threshhold=0) {
+    # tokenize the sentences
     sentences <- unlist(tokenize_sentences(text))
+    
+    # Remove punctuation
+    sentences <- removePunctuation(sentences)
+    
     rm(text)
     
     # Create an empty data frame

@@ -28,7 +28,7 @@ The project is to create a text prediction algorithm using data supplied by Swif
 
 The data is read in from the three text files. 
 
-```{r loadingdata, cache=TRUE, results="hide"}
+```{r loadingdata, cache=TRUE, results="hide", message=FALSE}
 # Read the  data in
 blog <- readLines("final/en_US/en_US.blogs.txt", encoding="UTF-8")
 twitter <- readLines("final/en_US/en_US.twitter.txt", encoding="UTF-8")
@@ -115,6 +115,7 @@ barplot(twogramfreq[2:26,2], names.arg=twogramfreq[2:26,1], col = "blue",
 barplot(threegramfreq[1:25,2], names.arg=threegramfreq[1:25,1], col = "red", 
         main="Threegrams (Top 25)", las=2, ylab = "Frequency")
 ```
+
 Note that the most common two gram was "a a" which has been removed due to not being a valid phrase.
 
 ## Plans for Algorithm
