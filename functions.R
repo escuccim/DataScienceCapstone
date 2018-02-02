@@ -10,21 +10,20 @@ splitngrams <- function(x) {
 }
 
 # Turn a character vector of text into a data frame of ngrams with their associated frequency
-createngrams <- function(text, n, filter_results=FALSE){
-    sentences <- unlist(tokenize_sentences(text))
+createngrams <- function(sentences, n, threshold=0){
     ngrams <- tokenize_ngrams(sentences, lowercase=TRUE, n=n, n_min=n, simplify=TRUE)
     # Unlist it
     ngrams <- unlist(ngrams)
     # Get frequency
-    ngramfreq = as.data.frame(table(ngrams))
+    ngramfreq <- as.data.frame(table(ngrams))
     
     rm("ngrams")
     # Order and save the two grams
     ngramfreq <- ngramfreq[order(-ngramfreq$Freq),]
     
-    if(filter_results){
+    if(threshold > 0){
         # Filter out ngrams that only occur once
-        filter <- ngramfreq$Freq > 1
+        filter <- ngramfreq$Freq > threshhold
         ngramfreq = ngramfreq[filter,]    
         rm("filter")
     }
@@ -115,15 +114,10 @@ scaleweight <- function(ngrams){
     return(ngrams)
 }
 
-weightweights <- function(ngrammodel){
-    
-}
-
 # remove non-words
 checkwords <- function(list){
     if(!exists("words")){
-        words <- read.csv("words.txt")
-        words <- words$X2    
+        words <- valid_word_list("words.txt")
     }
     
     filter <- apply(as.matrix(list),1,checkword)
@@ -133,6 +127,9 @@ checkwords <- function(list){
 # make a model for a maximum of six-grams from a given text corpus.
 # threshhold specifies a minimum required number of occurences in the text of an ngram
 makedata <- function(text, threshhold=0) {
+    sentences <- unlist(tokenize_sentences(text))
+    rm(text)
+    
     # Create an empty data frame
     ngrams <- data.frame(x1=character(),
                          x2=character(),
@@ -145,7 +142,7 @@ makedata <- function(text, threshhold=0) {
     
     # Create ngrams from the text
     for(i in 2:6){
-        ngramfreq <- createngrams(text, i)
+        ngramfreq <- createngrams(sentences, i, threshhold)
         if(threshhold > 0){
             ngramfreq <- subset(ngramfreq, ngramfreq$Freq > threshhold)
         }
@@ -211,4 +208,12 @@ invalid_word_list <- function(wordlist){
     bad_words <- wordlist[!filter]
     bad_words <- unique(bad_words)
     return(bad_words)
+}
+
+# create a vector of valid words from a text list
+valid_word_list <- function(file) {
+    words <- read.csv(file)
+    words <- tolower(words$X2)
+    save(words, file="validwords.RData")
+    return(words)
 }

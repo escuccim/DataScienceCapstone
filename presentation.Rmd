@@ -1,5 +1,5 @@
 ---
-title: "Text Prediction"
+title: "Text Prediction Algorithm"
 author: "Eric Scuccimarra"
 date: "27 January 2018"
 output: ioslides_presentation
@@ -19,6 +19,7 @@ library(tokenizers)
 The problem was to create a text prediction system using text taken from online news, blogs and Twitter. This presentation will describe the steps taken to accomplish this as well as describe the final algorithm.
 
 The data was provided by Swiftkey in multiple languages. Only the English data was used for this project.
+
 
 ## Loading the Data
 
@@ -57,6 +58,7 @@ blog <- cleanData(blog)
 ```
 
 Finally the data are combined into one vector and non-ASCII characters are removed:
+
 ```{r combinedata, cache=TRUE}
 text = c(news, twitter, blog)
 
@@ -66,7 +68,7 @@ text = iconv(text, "latin1", "ASCII", sub="")
 
 A sample of the raw data is below:
 ```{r, cache=TRUE}
-head(twitter, 3)
+head(text, 3)
 ```
 
 ## Exploratory Data Analysis
@@ -82,26 +84,27 @@ frequencycount <- sort(frequencycount, decreasing=TRUE)
 
 This allows us to view the most frequent words. Note that I purposefully did not remove stop words as I believe that doing so would negatively affect the quality of the predictions.
 
-```{r frequencycount}
+```{r frequencycount, cache=TRUE}
 load("frequencycount.RData")
 head(frequencycount, 12)
 ```
 
-We can also view a wordcloud of the data.
+We can also view a wordcloud of the data. In this case I have removed the stopwords.
 
-```{r wordcloud}
+```{r wordcloud, cache=TRUE}
 load("corpus.RData")
+corpus = tm_map(corpus, removeWords, stopwords("english"))
 pal2 <- brewer.pal(8,"Dark2")
 wordcloud(corpus, scale=c(6,.5), min.freq=2, max.words=300, random.order=TRUE,
           rot.per=0.5, colors=pal2,  use.r.layout=FALSE)
 ```
 
-## Tokenizing the Data
+## Tokenizing the Data into a Model
 
 After a great deal of trial and error I ended up tokenizing the data as follows:
 
-1. First the sentences are tokenized
-2. Next the words are tokenized in ngrams from length two to six.
+1. The sentences are tokenized.
+2. Next the sentences are tokenized in ngrams from length two to six.
 3. For each length of ngram a dataframe is created as follows:
     1. The last word of each ngram (or the target) is stored in the y column.
     2. The remaining words are reversed and stored in x5 to x1, with the right-hand (or lower numbered) features padded with NAs as appropriate.
@@ -109,7 +112,7 @@ After a great deal of trial and error I ended up tokenizing the data as follows:
 
 This results in five models, one for each length of ngram, which are combined into one large model.
 
-```{r createmodel}
+```{r createmodel, cache=TRUE, eval=FALSE}
 # Create an empty data frame
 ngrams <- data.frame(x1=character(),
                      x2=character(),
@@ -131,16 +134,22 @@ for(i in 2:6){
 # Reorder the columns
 columns <- c("x5","x4","x3","x2","x1","y","weight")
 ngrams <- ngrams[columns]
-# Clean the dataframe
-ngrams <- cleanmodel(ngrams)
-ngrammodel <- scaleweight(ngrams)
 ```
     
 ### Cleaning the Model
 
+Function cleanmodel takes in a list of ngrams and a threshhold and keeps only threshhold y's for each unique combination of x's. Since I will return three predictions for each input string there is no need to keep more than three rows for each unique ngram. The ngrams with the highest weight are kept.
+
+```{r cleanandscale, cache=TRUE, eval=FALSE}
+# Clean the dataframe
+ngrams <- cleanmodel(ngrams, 3)
+```
+
+### Removing Misspelled or Nonexistent Words
+
 I noticed that many of the ngrams contained either misspelled words, non-English words or other combinations of characters which were not recognizable as English. To address this I downloaded a list of 450,000 valid English words and filtered the ngrams with it.
 
-```{r cleanmodel, cache=TRUE}
+```{r cleanmodel, cache=TRUE, eval=FALSE}
 # Load valid words
 words <- read.csv("words.txt")
 words <- words$X2
@@ -156,33 +165,37 @@ bad_words <- wordlist[!filter]
 bad_words <- unique(bad_words)
 ```
 
-I removed all rows which contained invalid words in the y column, as I do not want the model to predict words which don't exist.
+I started by removing all rows which contained invalid words in the y column, as I do not want the model to predict words which don't exist. 
 
-```{r cleany}
+```{r cleany, cache=TRUE, eval=FALSE}
 y <- ngrammodel$y
 filter <- unlist(lapply(as.character(y), function(x) x %in% bad_words))
 ngrammodel <- ngrammodel[!filter,]
 
 # Rename the rows
 rownames(ngrammodel) <- 1:nrow(ngrammodel)
-
-# Repeat for other columns - full code in Appendix II
 ```
 
-I was ambivalent about cleaning the other columns, as non-existent words would not negatively effect the outcome of the algorithm and could only benefit the predictions if a user happens to type in a non-valid word. In the end I cleaned some of the other columns for the purpose of getting the data down to a reasonable size, and included logic for handling words which were not recognized in the prediction model.
+I was ambivalent about cleaning the other columns, as non-existent words would not negatively effect the outcome of the algorithm and could only benefit the predictions if a user happens to type in a non-valid word. In the end I did clean the other columns for the purpose of getting the data down to a reasonable size, and included logic for handling words which were not recognized in the prediction model.
 
-Finally, as I am only returning the top three predictions for any given input, there is no need to keep more than three y's for a unique ngram. This is accomplished with function cleanmodel included in Appendix I.
+The code to remove invalid words from the entire ngram data frame is in Appendix I in function validateWords.
 
 ### Weighting
-As there are far more possibilities for longer ngrams than for shorter ones, the shorter ngrams had far higher frequencies than longer ones, and thus much higher weights. The most frequent bigrams occured as many as 2,000 times in the data, while the maximum frequency for six-grams was closer to ten. Both the mean and median for frequency of ngrams of any length were 1 or close to 1.
+As there are far more possibilities for longer ngrams than for shorter ones, the shorter ngrams had far higher frequencies than longer ones, and thus much higher weights. The most frequent bigrams occured as many as 20,000 times in the data, while the maximum frequency for six-grams was closer to ten. Both the mean and median for frequency of ngrams of any length were 1 or close to 1.
 
 To attempt to standardize the weighting I transformed it on a log 10 scale, replacing any instance of 0 with 0.1. This brought the range of weighting to 0.1 to 4. This would allow for easier scaling of the weighting, which may still be desirable in the future, as described below.
 
+```{r scaleweights, cache=TRUE, eval=FALSE}
+ngrammodel <- scaleweight(ngrams)
+```
+
 Longer ngrams should generally have a higher weight than shorter ones as they will tend to represent better predictions. I considered scaling the weights accordingly, but in the end decided that this issue could be handled in the logic of the prediction function, which is described below.
 
-## Creating a Prediction Model
+## Creating a Prediction Algorithm
 
-I attempted to fit some decision trees to the data, but the RAM required to do so far exceeded the RAM available on my machine. After much trial and error I decided on  the model created above, as it provided power and flexibility when combined with the prediction algorithm, which functions as follows:
+I attempted to fit some decision trees to the data, but the RAM required to do so far exceeded the RAM available on my machine. After much trial and error I decided on  the model created above, as it provided a reasonable balance of power and flexibility when combined with the prediction algorithm.
+
+The prediction algorithm works as follows:
 
 1. For an input string x:
     1. x is converted to lowercase
@@ -210,12 +223,13 @@ predictText <- function(x){
     string <- rev(string[[1]])[1:5]
     len <- length(string)
     
+    # Try an easier way
     i <- 1
-    
-    # make a copy of the model
     matches <- ngrammodel
     for(word in string){
         if(!is.na(word)){
+            # Added check for NA to try to prevent overfitting
+            # | is.na(matches[,i])
             temp <- subset(matches, (matches[,i] == word  ))
             
             # if we have matches keep them, otherwise skip the word and continue
@@ -224,13 +238,13 @@ predictText <- function(x){
             } 
             
             # Check how many unique ys there are, if we have less than 3 we can break and return
+            # and no need to continue looping
             if(length(unique(matches$y)) <= 3){
                 break;
             }
             
             i <- i + 1    
         } else {
-            # else if we have reached an NA we are at the end of the vector
             break
         }
     }
@@ -298,33 +312,26 @@ The file biggerData.R includes all of the steps to create an ngrammodel, using a
 ### I. Functions
 
 ```{r functions}
-library(tm)
-library(RWeka)
-library(dplyr)
-library(magrittr)
-library(tokenizers)
-
 # Split the strings into features
 splitngrams <- function(x) {
     strsplit(x, " ")
 }
 
 # Turn a character vector of text into a data frame of ngrams with their associated frequency
-createngrams <- function(text, n, filter_results=FALSE){
-    sentences <- unlist(tokenize_sentences(text))
+createngrams <- function(sentences, n, threshold=0){
     ngrams <- tokenize_ngrams(sentences, lowercase=TRUE, n=n, n_min=n, simplify=TRUE)
     # Unlist it
     ngrams <- unlist(ngrams)
     # Get frequency
-    ngramfreq = as.data.frame(table(ngrams))
+    ngramfreq <- as.data.frame(table(ngrams))
     
     rm("ngrams")
     # Order and save the two grams
     ngramfreq <- ngramfreq[order(-ngramfreq$Freq),]
     
-    if(filter_results){
+    if(threshold > 0){
         # Filter out ngrams that only occur once
-        filter <- ngramfreq$Freq > 1
+        filter <- ngramfreq$Freq > threshhold
         ngramfreq = ngramfreq[filter,]    
         rm("filter")
     }
@@ -415,15 +422,10 @@ scaleweight <- function(ngrams){
     return(ngrams)
 }
 
-weightweights <- function(ngrammodel){
-    
-}
-
 # remove non-words
 checkwords <- function(list){
     if(!exists("words")){
-        words <- read.csv("words.txt")
-        words <- words$X2    
+        words <- valid_word_list("words.txt")
     }
     
     filter <- apply(as.matrix(list),1,checkword)
@@ -433,6 +435,9 @@ checkwords <- function(list){
 # make a model for a maximum of six-grams from a given text corpus.
 # threshhold specifies a minimum required number of occurences in the text of an ngram
 makedata <- function(text, threshhold=0) {
+    sentences <- unlist(tokenize_sentences(text))
+    rm(text)
+    
     # Create an empty data frame
     ngrams <- data.frame(x1=character(),
                          x2=character(),
@@ -445,7 +450,7 @@ makedata <- function(text, threshhold=0) {
     
     # Create ngrams from the text
     for(i in 2:6){
-        ngramfreq <- createngrams(text, i)
+        ngramfreq <- createngrams(sentences, i, threshhold)
         if(threshhold > 0){
             ngramfreq <- subset(ngramfreq, ngramfreq$Freq > threshhold)
         }
@@ -462,6 +467,10 @@ makedata <- function(text, threshhold=0) {
     return(ngrams)
 }
 
+```
+
+## II - Removing Invalid Words
+```{r removeinvalidwords}
 # For an ngrammodel and a list of INVALID words, remove any rows which contain invalid words
 validateWords <- function(ngrammodel, bad_words) {
     y <- ngrammodel$y
@@ -512,66 +521,12 @@ invalid_word_list <- function(wordlist){
     bad_words <- unique(bad_words)
     return(bad_words)
 }
-```
 
-## II - Removing Invalid Words
-```{r removeinvalidwords}
-# Load a list of English words
-words <- read.csv("words.txt")
-words <- words$X2
-words <- tolower(words)
-save(words, file="validwords.RData")
-
-# Create a list of unique words from the model
-wordlist <- c(as.character(ngrammodel$y), as.character(ngrammodel$x5), as.character(ngrammodel$x4), as.character(ngrammodel$x3), as.character(ngrammodel$x2), as.character(ngrammodel$x1))
-wordlist <- unique(wordlist)
-
-# Load functions
-source("functions.R")
-
-# FInd out which words are NOT in the list
-filter <- apply(as.matrix(wordlist),1,checkword)
-bad_words <- wordlist[!filter]
-bad_words <- unique(bad_words)
-save(bad_words, file="bad_words.RData")
-
-# Load our Ngram model
-load("ngrams_clean.RData")
-
-# We don't want to predict non-existent words, so remove any y's which aren't valid words
-y <- ngrammodel$y
-filter <- unlist(lapply(as.character(y), function(x) x %in% bad_words))
-ngrammodel <- ngrammodel[!filter,]
-save(ngrammodel, file="ngrams_clean.RData")
-
-x5 <- ngrammodel$x5
-filter <- unlist(lapply(as.character(x5), function(x) x %in% bad_words))
-ngrammodel <- ngrammodel[!filter,]
-rm(x5)
-
-x4 <- ngrammodel$x4
-filter <- unlist(lapply(as.character(x4), function(x) x %in% bad_words))
-ngrammodel <- ngrammodel[!filter,]
-rm(x4)
-
-x3 <- ngrammodel$x3
-filter <- unlist(lapply(as.character(x3), function(x) x %in% bad_words))
-ngrammodel <- ngrammodel[!filter,]
-rm(x3)
-
-x2 <- ngrammodel$x2
-filter <- unlist(lapply(as.character(x2), function(x) x %in% bad_words))
-ngrammodel <- ngrammodel[!filter,]
-rm(x2)
-
-x1 <- ngrammodel$x1
-filter <- unlist(lapply(as.character(x1), function(x) x %in% bad_words))
-ngrammodel <- ngrammodel[!filter,]
-rm(x1)
-
-# Rename rows to save space
-rownames(ngrammodel) <- 1:nrow(ngrammodel)
-
-save(ngrammodel, file="ngrams_clean.RData")
-saveRDS(ngrammodel, file="ngrammodel.Rds")
+# create a vector of valid words from a text list
+valid_word_list <- function(file) {
+    words <- read.csv(file)
+    words <- tolower(words$X2)
+    save(words, file="validwords.RData")
+    return(words)
+}
 ```
