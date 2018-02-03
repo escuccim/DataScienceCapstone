@@ -11,7 +11,7 @@
 
 <meta name="author" content="Eric Scuccimarra" />
 
-<meta name="date" content="2018-02-02" />
+<meta name="date" content="2018-02-03" />
 
 <title>Text Prediction Algorithm</title>
 
@@ -121,7 +121,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">Text Prediction Algorithm</h1>
 <h4 class="author"><em>Eric Scuccimarra</em></h4>
-<h4 class="date"><em>02 February 2018</em></h4>
+<h4 class="date"><em>03 February 2018</em></h4>
 
 </div>
 
@@ -225,6 +225,7 @@ for(i in 2:6){
 # Reorder the columns
 columns &lt;- c(&quot;x5&quot;,&quot;x4&quot;,&quot;x3&quot;,&quot;x2&quot;,&quot;x1&quot;,&quot;y&quot;,&quot;weight&quot;)
 ngrams &lt;- ngrams[columns]</code></pre>
+<p>The reason for reversing the strings is that I believe that the words closest to the end of the input are the most important for predicting the next word. By starting at the end and working our way backwards through the input we can immediately remove any ngrams which do not fit the input and then narrow the results down as we work backwards. The direction will become important when the prediction algorithm is described below, especially as concerning the flexibility to omit words which do not exist in the model.</p>
 <div id="cleaning-the-model" class="section level3">
 <h3>Cleaning the Model</h3>
 <p>Function cleanmodel takes in a list of ngrams and a threshhold and keeps only threshhold y’s for each unique combination of x’s. Since I will return three predictions for each input string there is no need to keep more than three rows for each unique ngram. The ngrams with the highest weight are kept.</p>

@@ -1,7 +1,7 @@
 ---
 title: "Text Prediction Algorithm"
 author: "Eric Scuccimarra"
-date: "02 February 2018"
+date: "03 February 2018"
 output: html_document
 ---
 
@@ -138,6 +138,8 @@ for(i in 2:6){
 columns <- c("x5","x4","x3","x2","x1","y","weight")
 ngrams <- ngrams[columns]
 ```
+    
+The reason for reversing the strings is that I believe that the words closest to the end of the input are the most important for predicting the next word. By starting at the end and working our way backwards through the input we can immediately remove any ngrams which do not fit the input and then narrow the results down as we work backwards. The direction will become important when the prediction algorithm is described below, especially as concerning the flexibility to omit words which do not exist in the model.
     
 ### Cleaning the Model
 
@@ -306,7 +308,7 @@ The file biggerData.R includes all of the steps to create an ngrammodel, using a
 
 ## Outstanding Issues
 
-* Overfitting - As has been described above, the vast majority of the ngrams occur only once in the corpus. While the algorithm does allow for inputs which do not exactly match an existing ngram, if the input does match an existing ngram the predictions will overfit the data. For example entering "my wife is a" as input will return only one prediction - "nurse."  I had considered removing any ngrams which appeared only once in the corpus to avoid this issue, but as the majority of the ngrams appeared only once this resulted in a very small model with very low quality predictions. The solution to this issue would be more data, which would allow me to filter out rare ngrams while still providing decent matches. 
+* Overfitting - As has been described above, the vast majority of the ngrams occur only once in the corpus. While the algorithm does allow for inputs which do not exactly match an existing ngram, if the input does match an existing ngram the predictions will overfit the data. For example entering "my wife is a" as input will return only one prediction - "nurse."  I had considered removing any ngrams which appeared only once in the corpus to avoid this issue, but as the majority of the ngrams appeared only once this resulted in a very small model with very low quality predictions. The solution to this issue would be more data, which would allow me to filter out rare ngrams while still providing decent matches.
 * Size of the data - the model is still relatively large. I feel that some sort of decision tree or neural network would provide far greater flexibility and quality of predictions, however my attempt to fit decision trees required prohibitive amounts of RAM even for the smallest subsets of the data I attempted to use. The prediction algorith I ended up using was an attempt to try to mimic a decision tree.
 * Online learning - ideally this algorithm would learn as it is used. Every time a prediction is generated the selected prediction would increase in weight while the unselected predictions would decrease slightly. This would allow the quality of the predictions to improve. If the input text contains ngrams which do not exist in the model, they could also be added. This would allow the algorithm to refine itself as it is used.
 
