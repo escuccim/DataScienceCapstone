@@ -3,6 +3,10 @@ By Eric Scuccimarra (skooch@gmail.com)
 
 This contains the code for my text prediction algorithms and application, as created for the Capstone course in the Johns Hopkins University Data Science specialization on Coursera.
 
+The Shiny App is available here: https://ericscuccimarra.shinyapps.io/TextPrediction2/
+
+A more in depth description of the steps taken to process the data and the algorithm used is available here: http://rpubs.com/skooch/355342
+
 ## Loading Data
 File: loaddata.R
 
